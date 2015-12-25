@@ -1,0 +1,67 @@
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "stm32f0xx_conf.h"
+
+	static unsigned char Led_State = 0x00;
+ 
+void TIM3_IRQHandler(void)
+	{
+    if(TIM_GetFlagStatus(TIM3, TIM_FLAG_Update) != RESET) //Timer update bayragi reset'e(reset = 0) degil ise ?
+        Led_State ^= (1 << 0); // Led_State in 0. bitini tersle
+    TIM_ClearITPendingBit(TIM3, TIM_FLAG_Update); //Bayragi temizle
+	}
+
+
+int main(void)
+{
+	GPIO_InitTypeDef        GPIO_InitStructure;
+	TIM_TimeBaseInitTypeDef TIM3_InitStructure;
+	NVIC_InitTypeDef        NVIC_InitStructure;
+
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);   //led için C portuna clock veriyoruz.
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);	//timer için APB1’e clock veriyoruz.
+	
+	
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_8;
+	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_Level_1;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOC,&GPIO_InitStructure);
+	
+	//Timer Ayari
+	TIM3_InitStructure.TIM_Prescaler         = 1000; //Prescaler degeri.
+	TIM3_InitStructure.TIM_CounterMode       = TIM_CounterMode_Up; //Timer yukari sayacak sekilde ayarlandi.
+	TIM3_InitStructure.TIM_Period            = 48000;//Period degeri.
+	TIM3_InitStructure.TIM_ClockDivision     = TIM_CKD_DIV1;//Bölme orani 1 yani geçersiz-kapali.
+	TIM_TimeBaseInit(TIM3, &TIM3_InitStructure);//Ayarlari yükle
+	TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE); // Kesmeyi aktif ediyoruz.
+	
+	//NVIC ayari(timeri belirtmek için)
+	NVIC_InitStructure.NVIC_IRQChannel          = TIM3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPriority  = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd       = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	TIM_Cmd(TIM3, ENABLE); 	//timeri çalistir
+	
+  /* Infinite loop */
+  while (1)
+  {
+			if(Led_State == 0x01)
+            GPIO_SetBits(GPIOC, GPIO_Pin_8);
+      else
+            GPIO_ResetBits(GPIOC, GPIO_Pin_8);
+  }
+	return(0);
+}
+
+#ifdef  USE_FULL_ASSERT
+
+void assert_failed(uint8_t* file, uint32_t line)
+{ 
+  while (1)
+  {
+  }
+}
+#endif
