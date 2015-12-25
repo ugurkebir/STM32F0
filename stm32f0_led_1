@@ -1,0 +1,68 @@
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+
+int main(void)
+{
+	#define MAVI GPIO_Pin_8    //pin8 e mavi etiketi verdim
+
+	#define YESIL GPIO_Pin_9   //pin 9 a yesil etiketi verdim
+	
+	GPIO_InitTypeDef pinler;   //:Bu ifade ile bir GPIO_InitTypeDef tipinde bir pinler nesnesi tanimlaniyor
+	
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC,ENABLE);  /*Bu komut ile C portunun clock almasini sagliyoruz.
+	Bu bizim kullanilmayan portlara gereksiz yere clock vermemizi engeller ve güç tasarrufu saglar.Bu komutla
+	clock verilmeyen portlar çalismazlar.*/
+	
+	/*RCC->AHBENR komutu bizim ikinci programda kullandigimiz clock verme komutudur.Görüldügü gibi fonksiyon
+	2 parametre aliyor.Ilk parametre clock ayari yapilacak portu,ikinci parametre ise açilip kapatilma durumunu
+	belirtmektedir.*/
+	
+	pinler.GPIO_Pin=MAVI;  /*Bu komut ile portun hangi pinleri üzerinde islem yapacagimizi belirtiyoruz.Bunu 
+	yaparken GPIO_InitTypeDef tipinde tanimladigimiz pinler nesnesini kullaniyoruz. pinler.GPIO_Pin komutu ile 
+	GPIO_InitTypeDef tipinin GPIO_Pin  degiskenine ulasiyoruz ve degerini belirliyoruz. pinler.GPIO_Pin degiskeni
+	içerisine bir deger atamis oluyoruz.Bu deger MAVI etiketiyle belirttigimiz GPIO_Pin_8 dir.*/
+	//pinler.GPIO_Pin=YESIL;
+	
+	pinler.GPIO_Mode= GPIO_Mode_OUT;  /*Bu komut ile belirttigimiz pinin çikis olarak ayarlanmasini sagliyoruz.
+	GPIO_InitTypeDef yapisinin bir elemani olan ve GPIOMode_TypeDef tipindeki GPIO_Mode elemaninin içerigi 
+	belirleniyor. GPIO_Mode_OUT(0x01) degeri pinler.GPIO_Mode degiskeni içerisine ataniyor.*/
+	
+	pinler.GPIO_OType=GPIO_OType_PP;  /* Çikis tipini belirlemek için kullanilan fonksiyondur.Bu örnekte push-pull
+	olarak ayarlanmistir. */
+	
+	pinler.GPIO_Speed=GPIO_Speed_2MHz; /*Pinin hiz ayarinin yapmak için kullanilir.En düsük hiz olan 2MHz ayarlanmistir.*/
+	
+	pinler.GPIO_PuPd=GPIO_PuPd_NOPULL;  /*Pull-up ve Pull-down ayarlarinin yapildigi kisimdir.Burda pull-up ve 
+	pull-down direnci kullanilmamistir. */
+	
+	GPIO_Init(GPIOC,&pinler);     /*Yukaridaki tanimlarda belirledigimiz ayarlarin hangi port için oldugunu bu 
+	fonksiyonla bildiriyoruz.Bu fonksiyonun yaptigi is pinler olarak tanimladigimiz GPIO_InitTypeDef tipindeki 
+	pinler nesnesinin adresini gönderiyoruz.Adres atamamizin sebebi ise bu fonksiyonun tanimlamasinda görüldügü
+	gibi GPIO_InitTypeDef* GPIO_InitStruct GPIO_InitTypeDef tipinde bir pointer tanimlanmasidir.Pointerlar deger
+	olarak adres göndermek zorundayiz.Pointer kullanimi kalicilik saglamak içindir. */
+	
+	GPIO_SetBits(GPIOC,MAVI); /*Son komutumuz ise MAVI olarak tanimladigimiz CPortunun 8 numarali pinini lojik 1 
+	yapma islemidir. */
+	
+	//GPIO_SetBits(GPIOC,YESIL); 
+
+	
+  /* Infinite loop */
+  while (1)
+  {
+
+  }
+}
+
+
+#ifdef  USE_FULL_ASSERT
+
+void assert_failed(uint8_t* file, uint32_t line)
+{ 
+ 
+  /* Infinite loop */
+  while (1)
+  {
+  }
+}
+#endif
